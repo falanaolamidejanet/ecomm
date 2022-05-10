@@ -1,7 +1,18 @@
+import secrets
 from django.db import models
 from django.contrib.auth.models import User
 
+from .paystack import PayStack
+
 # Create your models here.
+class Curousel(models.Model):
+    image = models.ImageField(upload_to="slider")
+    created_at = models.DateTimeField(auto_now_add=True, null=True,blank=True)
+
+
+    def __str__(self):
+        return str(self.created_at)
+
 class Customer(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=200)
@@ -62,6 +73,12 @@ OREDER_STATUS = (
 	('Order Canceled','Order Canceled'),
 	)
 
+METHOD = (
+    ('Cash On Delivery','Cash On Delivery'),
+    ('Paystack','Paystack'),
+    ('Payment Transfer','Payment Transfer'),
+)
+
 class Order(models.Model):
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
     ordered_by =models.CharField(max_length=200)
@@ -74,9 +91,38 @@ class Order(models.Model):
     order_status = models.CharField(max_length=200, choices=OREDER_STATUS)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    payment_method = models.CharField(max_length=20, choices=METHOD,default='Cash On Delivery')
+    payment_completed = models.BooleanField(default=False,null=True,blank=True)
+    ref = models.CharField(max_length=20,null=True, blank=True)
 
     def __str__(self):
-        return f'{self.order_status} ::: {self.created_at}'
+        return f'{self.order_status} ::: {str(self.id)}'
+
+    def save(self, *args, **kwargs):
+        while not self.ref:
+            ref = secrets.token_urlsafe(50)
+            obj_with_sm_ref = Order.objects.filter(ref=ref)
+            if not obj_with_sm_ref:
+                self.ref= ref
+        super().save(*args, **kwargs)
+    
+    def amount_value(self) -> int:
+        return self.total * 100
+
+    def verify_payment(self):
+        paystack = PayStack()
+        status, result = paystack.verify_payment(self.ref, self.total)
+        if status:
+            if result['total'] / 100 == self.total:
+                self.payment_completed=True
+            self.save()
+        if self.payment_completed:
+            return True
+        return False
+
+
+    # def __str__(self):
+    #     return f'{self.order_status} ::: {self.created_at}'
 
 	
 	

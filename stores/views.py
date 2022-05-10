@@ -1,3 +1,11 @@
+from urllib import response
+from django.http import JsonResponse
+from django.http.request import HttpRequest
+from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+
+
+from django.conf import settings
 from multiprocessing import context
 from django.shortcuts import redirect, render
 from stores.forms import CheckoutForm, CustomerRegister
@@ -12,6 +20,7 @@ from django.core.paginator import Paginator
 def index(request):
     allproduct = Product.objects.order_by('-created_at')
     allcategory = Category.objects.all()
+    sliders = Curousel.objects.all()
     # paginator
     p = Paginator(allproduct, 4)
     page_number = request.GET.get('page')
@@ -20,6 +29,7 @@ def index(request):
         'show':allproduct,
         'category':allcategory,
         'paginators':product_list,
+        'sliders':sliders
     }
     return render(request, 'stores/index.html', context)
 
@@ -294,3 +304,29 @@ def search(request):
         'results':results,
     }
     return render(request, 'stores/search.html',context )
+
+def transferPage(request):
+    return render(request, 'stores/transfer.html')
+
+# payment
+def transferPage(request):
+    return render(request, 'stores/transfer.html')
+
+def paymentPage(request,id):
+   
+    orders = Order.objects.get(id=id)
+
+    context = {
+        'order':orders,
+        'paystack_public_key': settings.PAYSTACK_PUBLIC_KEY 
+    }
+    return render(request, 'stores/payment.html',context)
+
+def verify_payment(request: HttpRequest, ref:str ) -> HttpResponse:
+    payment = get_object_or_404(Order, ref = ref)
+    verified = payment.verify_payment()
+    if verified:
+        messages.success(request, 'Verification Successfull')
+    else:
+        messages.error(request, 'Verification Failed')
+    return redirect('index')

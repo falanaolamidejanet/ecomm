@@ -24,9 +24,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4y1n%3d=e)xcibya*3#9h)r#_-aovi@&h=56_lh31tkfj=m2^t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['54.227.105.57']
+ALLOWED_HOSTS = ['54.227.105.57','*']
 
 
 # Application definition
@@ -131,10 +131,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR,'static/img')
 
 # email
 EMAIL_HOST= 'smtp.google.com'
-EMAIL_PORT=465
+EMAIL_PORT=568
 EMAIL_USE_SSL= True
-EMAIL_HOST_USER= 'olamidefalana18@gmail.com' #os.environ.get
-EMAIL_HOST_PASSWORD= 'olamide18' #os.environ.get
+EMAIL_HOST_USER= os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD= os.environ.get('HIEMAIL_PASSWORD')
+
+# paystack
+PAYSTACK_SECRET_KEY = 'sk_test_0317ba2742c61e1e8615e10d1243d11d408002ef'
+PAYSTACK_PUBLIC_KEY = 'pk_test_db7c20bff6d8de7179d30d40e76a36005dc8d605'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

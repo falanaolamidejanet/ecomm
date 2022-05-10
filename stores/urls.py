@@ -20,5 +20,9 @@ urlpatterns=[
     path('order-detail/<int:id>/',views.orderDetails,name='order-detail'),
     path('search/',views.search,name='search'),
 
+    path('transfer/',views.transferPage,name='transfer'),
+    path('payment/<int:id>/',views.paymentPage,name='payment'),
+    path('<str:ref>/',views.verify_payment,name='verify-payment'),
+
     
 ]
